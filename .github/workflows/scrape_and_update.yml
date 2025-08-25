@@ -2,7 +2,7 @@ name: Scrape Competitor Promotions
 
 on:
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '0 22 * * *' # Runs daily at 22:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -18,28 +18,23 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Firefox
+      # FINAL SOLUTION: Install Firefox via apt, and geckodriver manually
+      - name: Install Firefox and geckodriver
         run: |
           sudo apt-get update
-          sudo apt-get install -y firefox geckodriver
+          sudo apt-get install -y firefox wget
+          GECKODRIVER_VERSION="v0.34.0" # A recent, stable version of the driver
+          wget "https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz" -O geckodriver.tar.gz
+          tar -xzf geckodriver.tar.gz
+          sudo mv geckodriver /usr/local/bin/
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests selenium beautifulsoup4
 
-      - name: Run Scraper Diagnostic
+      - name: Run Scraper
         env:
           JSONBIN_URL: ${{ secrets.JSONBIN_URL }}
           JSONBIN_API_KEY: ${{ secrets.JSONBIN_API_KEY }}
         run: python scraper_sg.py
-
-      # This step will save our debug files
-      - name: Upload Artifacts
-        if: always() # This ensures it runs even if the previous step fails
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-files
-          path: |
-            debug_*.png
-            debug_*.html
