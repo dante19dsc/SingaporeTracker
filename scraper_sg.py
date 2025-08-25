@@ -15,7 +15,7 @@ CHROME_EXECUTABLE_PATH = os.environ.get("CHROME_BIN")
 
 # --- Helper Functions ---
 def parse_promo_date_sg(date_text, competitor):
-    # This function remains the same
+    """Parses date strings from different Singaporean websites."""
     try:
         if competitor == "Courts":
             cleaned_text = date_text.lower().replace("valid from", "").replace("valid till", "").strip()
@@ -44,7 +44,6 @@ def setup_driver():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
-    ## CHANGE: Added more arguments known to improve stability in CI/CD environments
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-extensions")
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36")
@@ -57,9 +56,6 @@ def setup_driver():
     return webdriver.Chrome(service=service, options=options)
 
 # --- Scraper Functions ---
-## CHANGE: All scraper functions now accept a 'driver' argument
-## and do NOT set up or quit their own driver.
-
 def scrape_best_denki(driver):
     print("\n--- Scraping Best Denki ---")
     promotions = []
@@ -168,7 +164,6 @@ def scrape_gain_city(driver):
 
 # --- Main Execution ---
 def update_jsonbin(data, bin_url, api_key):
-    # This function remains the same
     headers = {'Content-Type': 'application/json', 'X-Master-Key': api_key, 'X-Bin-Versioning': 'false'}
     print(f"\n--- Updating data to jsonbin.io ---")
     if not data:
@@ -195,13 +190,11 @@ if __name__ == "__main__":
         exit(1)
 
     all_promotions = []
-    driver = None # Initialize driver to None
+    driver = None
     try:
-        ## CHANGE: Set up the single driver instance here
         print("--- Setting up single Chrome driver instance ---")
         driver = setup_driver()
         
-        ## CHANGE: Pass the driver to each function
         all_promotions.extend(scrape_best_denki(driver))
         all_promotions.extend(scrape_courts(driver))
         all_promotions.extend(scrape_harvey_norman(driver))
@@ -211,7 +204,6 @@ if __name__ == "__main__":
         print(f"\nAn unexpected error occurred in the main execution block: {e}")
     
     finally:
-        ## CHANGE: Quit the single driver instance at the very end
         if driver:
             print("\n--- Shutting down Chrome driver instance ---")
             driver.quit()
