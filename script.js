@@ -8,28 +8,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- GLOBAL STATE ---
     let promotions = [];
     let currentDate = new Date('2025-08-01T00:00:00Z');
-    let charts = {}; // To hold chart instances for destruction
+    let charts = {};
 
     // --- CONFIGURATION DATA ---
     const competitors = ['Courts', 'Harvey Norman', 'Gain City'];
     const competitorConfig = { 
-        'Courts': { colorClass: 'courts', bgColor: '#fdf6f1', chartColor: 'var(--color-comp-1)' }, 
-        'Harvey Norman': { colorClass: 'harvey-norman', bgColor: '#f3f2f7', chartColor: 'var(--color-comp-2)' }, 
-        'Gain City': { colorClass: 'gain-city', bgColor: '#f0f0f5', chartColor: 'var(--color-comp-3)' } 
+        'Courts': { colorClass: 'courts', bgColor: '#f9fafb', chartColor: '#374151' }, 
+        'Harvey Norman': { colorClass: 'harvey-norman', bgColor: '#f9fafb', chartColor: '#6b7280' }, 
+        'Gain City': { colorClass: 'gain-city', bgColor: '#f9fafb', chartColor: '#9ca3af' } 
     };
     const promoCategories = [ 'Promo Bank & Payment', 'Promo HP & Gadget', 'Promo Laptop & PC', 'Promo TV & Audio', 'Promo Home Appliances', 'Promo Back to School', 'Promo 17 Agustus', 'Other Promotions' ];
-    const categoryColors = {
-        'Promo Bank & Payment': '#8B4513',    // Saddle Brown
-        'Promo HP & Gadget': '#D2691E',      // Warm Chocolate
-        'Promo Laptop & PC': '#CD853F',      // Sandy Brown
-        'Promo TV & Audio': '#A0522D',       // Sienna
-        'Promo Home Appliances': '#B8860B',  // Dark Goldenrod
-        'Promo Back to School': '#DAA520',   // Goldenrod
-        'Promo 17 Agustus': '#E67E22',       // Sunset Orange
-        'Other Promotions': '#F39C12'        // Golden Honey
-    };
-    const categoryIcons = { 'Promo Bank & Payment': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="25" width="80" height="50" rx="8" fill="#005A9C"/><rect x="10" y="60" width="80" height="5" fill="#7BB8F2"/><rect x="22" y="35" width="15" height="12"rx="2" fill="#F5A623"/></svg>`, 'Promo HP & Gadget': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="15" width="50" height="70" rx="8" fill="#7BB8F2"/><rect x="15" y="25" width="40" height="60" rx="8" fill="#005A9C"/><rect x="20" y="32" width="30" height="46" rx="3" fill="#F5A623"/></svg>`, 'Promo Laptop & PC': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g><path d="M 5 70 L 95 70 L 85 78 L 15 78 Z" fill="#005A9C"/><rect x="18" y="22" width="74" height="48" rx="5" fill="#7BB8F2" transform="skewX(-10)"/><rect x="25" y="28" width="60" height="36" rx="2" fill="#005A9C" transform="skewX(-10)"/></g></svg>`, 'Promo TV & Audio': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="20" width="84" height="50" rx="4" fill="#005A9C"/><rect x="13" y="25" width="74" height="40" fill="#7BB8F2"/><path d="M 45 70 L 55 70 L 65 80 L 35 80 Z" fill="#005A9C"/><rect x="20" y="85" width="60" height="5" rx="2.5" fill="#F5A623"/></svg>`, 'Promo Home Appliances': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 35) scale(0.8)"><path d="M 0 -15 L 0 15 M -13 0 L 13 0 M -9 -9 L 9 9 M -9 9 L 9 -9" stroke="#005A9C" stroke-width="4" stroke-linecap="round"/></g><path d="M 25 60 C 25 50, 50 50, 50 75 S 75 90, 75 80 C 75 70, 60 70, 50 85 Z" fill="#7BB8F2" transform="translate(-15 0)"/><g transform="translate(70 70) scale(0.6)"><circle cx="0" cy="0" r="12" fill="none" stroke="#F5A623" stroke-width="4"/><path d="M 0 0 L 10 5" stroke="#F5A623" stroke-width="4" stroke-linecap="round"/><path d="M 0 0 L -10 5" stroke="#F5A623" stroke-width="4" stroke-linecap="round"/><path d="M 0 0 L 0 -12" stroke="#F5A623" stroke-width="4" stroke-linecap="round"/></g></svg>`, 'Promo Back to School': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 15 80 Q 50 90 85 80 L 85 20 Q 50 10 15 20 Z" fill="#005A9C"/><path d="M 50 22 V 82" stroke="#7BB8F2" stroke-width="4"/><circle cx="50" cy="50" r="12" fill="#F5A623"/><path d="M 50 38 Q 55 35 52 30" stroke="#005A9C" stroke-width="3" fill="none"/></svg>`, 'Promo 17 Agustus': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="10" width="6" height="80" rx="3" fill="#005A9C"/><path d="M 21 25 C 40 15, 60 35, 80 25 V 45 C 60 55, 40 35, 21 45 Z" fill="#F5A623"/><path d="M 21 45 C 40 35, 60 55, 80 45 V 65 C 60 75, 40 55, 21 65 Z" fill="#7BB8F2"/></svg>`, 'Other Promotions': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="60" height="45" rx="5" fill="#005A9C"/><rect x="15" y="25" width="70" height="15" rx="5" fill="#7BB8F2"/><rect x="45" y="25" width="10" height="60" fill="#F5A623"/><path d="M 45 25 C 35 15, 25 15, 25 25" stroke="#F5A623" stroke-width="8" fill="none"/><path d="M 55 25 C 65 15, 75 15, 75 25" stroke="#F5A623" stroke-width="8" fill="none"/></svg>` };
     
+    // NEW Monochrome color palette for charts
+    const categoryColors = {
+        'Promo Bank & Payment': '#111827',
+        'Promo HP & Gadget': '#1f2937',
+        'Promo Laptop & PC': '#374151',
+        'Promo TV & Audio': '#4b5563',
+        'Promo Home Appliances': '#6b7280',
+        'Promo Back to School': '#9ca3af',
+        'Promo 17 Agustus': '#d1d5db',
+        'Other Promotions': '#e5e7eb'
+    };
+
+    // NEW Monochrome SVG icons
+    const categoryIcons = { 'Promo Bank & Payment': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="25" width="80" height="50" rx="8" fill="#374151"/><rect x="10" y="60" width="80" height="5" fill="#9ca3af"/><rect x="22" y="35" width="15" height="12"rx="2" fill="#d1d5db"/></svg>`, 'Promo HP & Gadget': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="15" width="50" height="70" rx="8" fill="#9ca3af"/><rect x="15" y="25" width="40" height="60" rx="8" fill="#374151"/><rect x="20" y="32" width="30" height="46" rx="3" fill="#d1d5db"/></svg>`, 'Promo Laptop & PC': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g><path d="M 5 70 L 95 70 L 85 78 L 15 78 Z" fill="#374151"/><rect x="18" y="22" width="74" height="48" rx="5" fill="#9ca3af" transform="skewX(-10)"/><rect x="25" y="28" width="60" height="36" rx="2" fill="#374151" transform="skewX(-10)"/></g></svg>`, 'Promo TV & Audio': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="20" width="84" height="50" rx="4" fill="#374151"/><rect x="13" y="25" width="74" height="40" fill="#9ca3af"/><path d="M 45 70 L 55 70 L 65 80 L 35 80 Z" fill="#374151"/><rect x="20" y="85" width="60" height="5" rx="2.5" fill="#d1d5db"/></svg>`, 'Promo Home Appliances': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g transform="translate(50 35) scale(0.8)"><path d="M 0 -15 L 0 15 M -13 0 L 13 0 M -9 -9 L 9 9 M -9 9 L 9 -9" stroke="#374151" stroke-width="4" stroke-linecap="round"/></g><path d="M 25 60 C 25 50, 50 50, 50 75 S 75 90, 75 80 C 75 70, 60 70, 50 85 Z" fill="#9ca3af" transform="translate(-15 0)"/><g transform="translate(70 70) scale(0.6)"><circle cx="0" cy="0" r="12" fill="none" stroke="#d1d5db" stroke-width="4"/><path d="M 0 0 L 10 5" stroke="#d1d5db" stroke-width="4" stroke-linecap="round"/><path d="M 0 0 L -10 5" stroke="#d1d5db" stroke-width="4" stroke-linecap="round"/><path d="M 0 0 L 0 -12" stroke="#d1d5db" stroke-width="4" stroke-linecap="round"/></g></svg>`, 'Promo Back to School': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 15 80 Q 50 90 85 80 L 85 20 Q 50 10 15 20 Z" fill="#374151"/><path d="M 50 22 V 82" stroke="#9ca3af" stroke-width="4"/><circle cx="50" cy="50" r="12" fill="#d1d5db"/><path d="M 50 38 Q 55 35 52 30" stroke="#374151" stroke-width="3" fill="none"/></svg>`, 'Promo 17 Agustus': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="10" width="6" height="80" rx="3" fill="#374151"/><path d="M 21 25 C 40 15, 60 35, 80 25 V 45 C 60 55, 40 35, 21 45 Z" fill="#d1d5db"/><path d="M 21 45 C 40 35, 60 55, 80 45 V 65 C 60 75, 40 55, 21 65 Z" fill="#9ca3af"/></svg>`, 'Other Promotions': `<svg width="64" height="64" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="60" height="45" rx="5" fill="#374151"/><rect x="15" y="25" width="70" height="15" rx="5" fill="#9ca3af"/><rect x="45" y="25" width="10" height="60" fill="#d1d5db"/><path d="M 45 25 C 35 15, 25 15, 25 25" stroke="#d1d5db" stroke-width="8" fill="none"/><path d="M 55 25 C 65 15, 75 15, 75 25" stroke="#d1d5db" stroke-width="8" fill="none"/></svg>` };
+
     // --- DATA PROCESSING & UTILITY FUNCTIONS ---
     const getPromoCategory = (promo) => { const text = (promo.title + ' ' + (promo.details || '')).toLowerCase(); if (text.includes('bank') || text.includes('credit card') || text.includes('cicilan')) return 'Promo Bank & Payment'; if (text.includes('hp') || text.includes('galaxy') || text.includes('tecno') || text.includes('oppo')) return 'Promo HP & Gadget'; if (text.includes('laptop') || text.includes('back to school')) return 'Promo Laptop & PC'; if (text.includes('tv') || text.includes('audio')) return 'Promo TV & Audio'; if (text.includes('ac ') || text.includes('air conditioner')) return 'Promo Home Appliances'; if (text.includes('pahlawan') || text.includes('17 agustus')) return 'Promo 17 Agustus'; return 'Other Promotions'; };
     const getCategoryIcon = (category) => categoryIcons[category] || categoryIcons['Other Promotions'];
@@ -52,16 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) { showNotification('❌ Error loading data from server.', 'bg-red-500'); return; }
             const data = await response.json();
             let loadedPromotions = data.record || [];
-            // Standardize competitor names on load
             loadedPromotions = loadedPromotions.map(p => {
                 const competitorName = p.competitor.toLowerCase();
-                if (competitorName.includes('courts')) {
-                    p.competitor = 'Courts';
-                } else if (competitorName.includes('harvey norman')) {
-                    p.competitor = 'Harvey Norman';
-                } else if (competitorName.includes('gain city')) {
-                    p.competitor = 'Gain City';
-                }
+                if (competitorName.includes('courts')) p.competitor = 'Courts';
+                else if (competitorName.includes('harvey norman')) p.competitor = 'Harvey Norman';
+                else if (competitorName.includes('gain city')) p.competitor = 'Gain City';
                 return p;
             });
             promotions = loadedPromotions.map((p, index) => {
@@ -229,9 +228,9 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.values(charts).forEach(chart => chart.destroy());
         charts = {};
         Chart.defaults.font.family = "'Inter', sans-serif";
-        Chart.defaults.color = '#A67C5A'; // Use secondary text color for defaults
+        Chart.defaults.color = '#6b7280';
         
-        // Bar Chart - FIXED with direct hex colors
+        // Bar Chart with new monochrome colors
         const barCtx = document.getElementById('bar-chart').getContext('2d');
         charts.bar = new Chart(barCtx, { 
             type: 'bar', 
@@ -241,9 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     label: '# of Active Promotions',
                     data: competitors.map(c => activePromos.filter(p => p.competitor === c).length),
                     backgroundColor: [
-                        '#D2691E', // Courts - Warm Chocolate
-                        '#CD853F', // Harvey Norman - Sandy Brown
-                        '#8B4513'  // Gain City - Saddle Brown
+                        competitorConfig['Courts'].chartColor,
+                        competitorConfig['Harvey Norman'].chartColor,
+                        competitorConfig['Gain City'].chartColor
                     ],
                     borderRadius: 4,
                 }]
@@ -255,9 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 plugins: { 
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#6B4E3D', // Rich Mocha
-                        titleColor: '#FFFBF7',
-                        bodyColor: '#FFFBF7',
+                        backgroundColor: '#1a1a1a',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
                         titleFont: { size: 14, weight: 'bold' },
                         bodyFont: { size: 12 },
                         cornerRadius: 4,
@@ -266,12 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 scales: {
                     x: { 
-                        grid: { color: 'rgba(107, 78, 61, 0.1)' }, // Mocha tinted grid lines
-                        ticks: { color: '#A67C5A' } // Caramel text
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: { color: '#6b7280' }
                     },
                     y: { 
                         grid: { display: false },
-                        ticks: { color: '#A67C5A' } // Caramel text
+                        ticks: { color: '#6b7280' }
                     }
                 }
             } 
@@ -301,9 +300,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     plugins: { 
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#6B4E3D',
-                            titleColor: '#FFFBF7',
-                            bodyColor: '#FFFBF7',
+                            backgroundColor: '#1a1a1a',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
                             titleFont: { size: 14, weight: 'bold' },
                             bodyFont: { size: 12 },
                             cornerRadius: 4,
@@ -326,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const config = competitorConfig[compName];
             const card = document.createElement('div');
-            card.className = `paper-card promo-card`; // Added paper-card for consistency
+            card.className = `paper-card promo-card`;
             
             const contentId = `promo-content-${compName.replace(/\s+/g, '')}`;
             card.innerHTML = `<div class="promo-card-header ${config.colorClass}">${compName} Promotions</div><div class="promo-card-content" id="${contentId}"></div>`;
