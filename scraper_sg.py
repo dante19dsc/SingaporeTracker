@@ -11,7 +11,9 @@ import time
 from datetime import datetime
 
 # --- Configuration ---
-CHROME_EXECUTABLE_PATH = os.environ.get("CHROME_BIN")
+# NOTE: The CHROME_EXECUTABLE_PATH is no longer set by the new workflow,
+# but the code handles this gracefully.
+CHROME_EXECUTABLE_PATH = os.environ.get("CHROME_BIN") 
 
 # --- Helper Functions ---
 def parse_promo_date_sg(date_text, competitor):
@@ -39,6 +41,8 @@ def parse_promo_date_sg(date_text, competitor):
 
 def setup_driver():
     """Initializes a robust Selenium WebDriver for GitHub Actions or local use."""
+    ## DEBUG: Adding print statements to track driver setup
+    print("    - Initializing ChromeOptions...")
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
@@ -52,8 +56,12 @@ def setup_driver():
         print(f"    - Using Chrome from path: {CHROME_EXECUTABLE_PATH}")
         options.binary_location = CHROME_EXECUTABLE_PATH
 
+    print("    - Initializing Chrome Service...")
     service = Service()
-    return webdriver.Chrome(service=service, options=options)
+    print("    - Creating webdriver.Chrome instance...")
+    driver = webdriver.Chrome(service=service, options=options)
+    print("    - Chrome driver instance created successfully.")
+    return driver
 
 # --- Scraper Functions ---
 def scrape_best_denki(driver):
@@ -182,23 +190,46 @@ def update_jsonbin(data, bin_url, api_key):
         return False
 
 if __name__ == "__main__":
-    JSONBIN_URL = os.environ.get("JSONBIN_URL")
-    JSONBIN_API_KEY = os.environ.get("JSONBIN_API_KEY")
+    ## DEBUG: Add print statements to the main execution block
+    print("--- SCRIPT EXECUTION STARTED ---")
 
-    if not JSONBIN_URL or not JSONBIN_API_KEY:
-        print("FATAL: Environment variables for jsonbin.io are not set.")
+    print("Checking for environment variables (secrets)...")
+    jsonbin_url_secret = os.environ.get("JSONBIN_URL")
+    jsonbin_api_key_secret = os.environ.get("JSONBIN_API_KEY")
+
+    # SAFE DEBUGGING: Do NOT print the actual secrets.
+    # We print their type and length to confirm they are loaded as strings.
+    if jsonbin_url_secret:
+        print(f"    - JSONBIN_URL secret: Found. Type: {type(jsonbin_url_secret)}, Length: {len(jsonbin_url_secret)}")
+    else:
+        print("    - JSONBIN_URL secret: NOT FOUND.")
+
+    if jsonbin_api_key_secret:
+        print(f"    - JSONBIN_API_KEY secret: Found. Type: {type(jsonbin_api_key_secret)}, Length: {len(jsonbin_api_key_secret)}")
+    else:
+        print("    - JSONBIN_API_KEY secret: NOT FOUND.")
+
+    # Explicitly check and exit for each missing secret
+    if not jsonbin_url_secret:
+        print("FATAL: The JSONBIN_URL secret is missing from repository settings. Exiting.")
+        exit(1)
+
+    if not jsonbin_api_key_secret:
+        print("FATAL: The JSONBIN_API_KEY secret is missing from repository settings. Exiting.")
         exit(1)
 
     all_promotions = []
     driver = None
     try:
-        print("--- Setting up single Chrome driver instance ---")
+        print("\n--- Setting up single Chrome driver instance ---")
         driver = setup_driver()
         
+        print("\n--- Starting all scrapers ---")
         all_promotions.extend(scrape_best_denki(driver))
         all_promotions.extend(scrape_courts(driver))
         all_promotions.extend(scrape_harvey_norman(driver))
         all_promotions.extend(scrape_gain_city(driver))
+        print("\n--- All scrapers finished ---")
     
     except Exception as e:
         print(f"\nAn unexpected error occurred in the main execution block: {e}")
@@ -213,6 +244,8 @@ if __name__ == "__main__":
     print(f"\nScraping complete. Total promotions found: {len(all_promotions)}")
     
     if all_promotions:
-        update_jsonbin(all_promotions, JSONBIN_URL, JSONBIN_API_KEY)
+        update_jsonbin(all_promotions, jsonbin_url_secret, jsonbin_api_key_secret)
     else:
         print("\nNo promotions found. Skipping JSONbin update.")
+
+    print("\n--- SCRIPT EXECUTION FINISHED ---")
