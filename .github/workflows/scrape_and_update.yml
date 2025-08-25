@@ -7,7 +7,9 @@ on:
 
 jobs:
   scrape:
-    runs-on: ubuntu-latest
+    # THE FINAL FIX: Switch to a stable runner environment
+    runs-on: ubuntu-22.04
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,7 +19,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      # FINAL, STABLE METHOD: Install Ubuntu's official Chromium package
+      # This method is stable and reliable on Ubuntu 22.04
       - name: Install Chromium Browser and Driver
         run: |
           sudo apt-get update
