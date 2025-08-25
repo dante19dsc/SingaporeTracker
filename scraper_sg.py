@@ -1,8 +1,6 @@
 import os
 import requests
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium import webdriver
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -11,63 +9,198 @@ import json
 import time
 from datetime import datetime
 
+# --- Helper Functions ---
+def parse_promo_date_sg(date_text, competitor):
+    """Parses date strings from different Singaporean websites."""
+    try:
+        if competitor == "Courts":
+            cleaned_text = date_text.lower().replace("valid from", "").replace("valid till", "").strip()
+            if ' - ' in cleaned_text:
+                start_str, end_str = cleaned_text.split(' - ')
+                try:
+                    end_date_obj = datetime.strptime(end_str.strip(), "%d %b %Y")
+                except ValueError:
+                    end_str_with_year = f"{end_str.strip()} {datetime.now().year}"
+                    end_date_obj = datetime.strptime(end_str_with_year, "%d %b %Y")
+                start_str_with_year = f"{start_str.strip()} {end_date_obj.year}"
+                start_date_obj = datetime.strptime(start_str_with_year, "%d %b %Y")
+                return start_date_obj.strftime("%Y-%m-%d"), end_date_obj.strftime("%Y-%m-%d")
+            else:
+                end_date_obj = datetime.strptime(cleaned_text.strip(), "%d %b %Y")
+                return datetime.now().strftime("%Y-%m-%d"), end_date_obj.strftime("%Y-%m-%d")
+        return "", ""
+    except Exception as e:
+        print(f"      - Could not parse date: '{date_text}' for {competitor} | Error: {e}")
+        return "", ""
+
 def setup_driver():
-    """Initializes a Firefox WebDriver."""
-    print("--- Setting up Firefox Driver ---")
-    options = FirefoxOptions()
+    """Initializes an undetectable Selenium WebDriver."""
+    print("--- Setting up Undetected Chrome Driver ---")
+    options = uc.ChromeOptions()
     options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
-    service = FirefoxService(executable_path="/usr/bin/geckodriver")
-    return webdriver.Firefox(service=service, options=options)
+    
+    driver = uc.Chrome(options=options, use_subprocess=True)
+    print("--- Undetected Chrome Driver is ready ---")
+    return driver
 
-def run_diagnostic(driver):
-    """Runs a diagnostic test and saves artifacts."""
-    # Test 1: Prove the browser works by visiting a neutral site
+# --- Scraper Functions ---
+def scrape_best_denki(driver):
+    print("\n--- Scraping Best Denki ---")
+    promotions = []
     try:
-        print("\n--- DIAGNOSTIC STEP 1: Testing connection with Google.com ---")
-        driver.get("https://www.google.com")
-        print(f"    - Successfully loaded page. Title: '{driver.title}'")
-        driver.save_screenshot("debug_google_success.png")
-        print("    - Successfully saved screenshot: debug_google_success.png")
+        driver.get("https://www.bestdenki.com.sg/bundle-promotions")
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CLASS_NAME, "promotions-list")))
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        promo_cards = soup.find_all('div', class_='promotions')
+        print(f"    - Found {len(promo_cards)} potential promotion cards.")
+        for card in promo_cards:
+            try:
+                link = card.find('a')
+                if not link: continue
+                img = link.find('img')
+                title = img['alt'].strip() if img else "No Title Found"
+                promo_url = link['href']
+                promotions.append({"competitor": "Best Denki", "title": title, "startDate": "", "endDate": "", "details": "Click for details.", "url": promo_url})
+            except Exception as e:
+                print(f"      - ERROR parsing a card: {e}")
+                continue
     except Exception as e:
-        print(f"    - FATAL ERROR: Could not even connect to Google. Error: {e}")
-        # If this fails, there's nothing more we can do with this environment.
-        return
+        print(f"    - FATAL ERROR for Best Denki: {e}")
+    return promotions
 
-    # Test 2: Try to access the target site and capture the result
-    target_url = "https://www.harveynorman.com.sg/promotions/catalogues-and-promotions.html"
-    print(f"\n--- DIAGNOSTIC STEP 2: Attempting to access {target_url} ---")
+def scrape_courts(driver):
+    print("\n--- Scraping Courts ---")
+    promotions = []
     try:
-        driver.get(target_url)
-        # If it gets here without crashing, it means it worked!
-        print("    - SUCCESS: Page loaded without crashing!")
-        driver.save_screenshot("debug_harvey_norman_success.png")
-        with open("debug_harvey_norman_success.html", "w", encoding="utf-8") as f:
-            f.write(driver.page_source)
-        print("    - Saved screenshot and HTML of successful page load.")
-
+        driver.get("https://www.courts.com.sg/hot-deals")
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CLASS_NAME, "cms-promotion-box")))
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        promo_cards = soup.find_all('div', class_='cms-promotion-box')
+        print(f"    - Found {len(promo_cards)} potential promotion cards.")
+        for card in promo_cards:
+            try:
+                link = card.find('a')
+                title_tag = card.find('p', class_='title')
+                validity_tag = card.find('p', class_='date')
+                if not all([link, title_tag, validity_tag]): continue
+                title = title_tag.get_text(strip=True)
+                validity = validity_tag.get_text(strip=True)
+                promo_url = link['href']
+                start_date, end_date = parse_promo_date_sg(validity, "Courts")
+                promotions.append({"competitor": "Courts", "title": title, "startDate": start_date, "endDate": end_date, "details": validity, "url": promo_url})
+            except Exception as e:
+                print(f"      - ERROR parsing a card: {e}")
+                continue
     except Exception as e:
-        # This is where the crash has been happening. We will capture the state.
-        print(f"    - ERROR: The browser failed as expected. Error: {e}")
-        print("    - Attempting to save debug files...")
-        try:
-            # These files will show us the block page/CAPTCHA
-            driver.save_screenshot("debug_harvey_norman_crashed.png")
-            with open("debug_harvey_norman_crashed.html", "w", encoding="utf-8") as f:
-                f.write(driver.page_source)
-            print("    - Successfully saved screenshot and HTML from the failed page.")
-        except Exception as save_e:
-            print(f"    - Could not save debug files after crash. Error: {save_e}")
+        print(f"    - FATAL ERROR for Courts: {e}")
+    return promotions
+
+def scrape_harvey_norman(driver):
+    print("\n--- Scraping Harvey Norman ---")
+    promotions = []
+    try:
+        driver.get("https://www.harveynorman.com.sg/promotions/catalogues-and-promotions.html")
+        wait_selector = "li.item.promotion"
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, wait_selector)))
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        promo_cards = soup.select(wait_selector)
+        print(f"    - Found {len(promo_cards)} potential promotion cards.")
+        for card in promo_cards:
+            try:
+                link = card.find('a', class_='product-item-link')
+                if not link: continue
+                img = link.find('img')
+                title = img['alt'].strip() if img else "No Title Found"
+                promo_url = link['href']
+                promotions.append({"competitor": "Harvey Norman", "title": title, "startDate": "", "endDate": "", "details": "See website for period.", "url": promo_url})
+            except Exception as e:
+                print(f"      - ERROR parsing a card: {e}")
+                continue
+    except Exception as e:
+        print(f"    - FATAL ERROR for Harvey Norman: {e}")
+    return promotions
+
+def scrape_gain_city(driver):
+    print("\n--- Scraping Gain City ---")
+    promotions = []
+    try:
+        driver.get("https://www.gaincity.com/promotions")
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//script[@type='application/ld+json']")))
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        json_ld_scripts = soup.find_all('script', type='application/ld+json')
+        found_promos = []
+        for script in json_ld_scripts:
+            if not script.string: continue
+            try:
+                data = json.loads(script.string)
+                graph_items = data.get('@graph', []) if isinstance(data, dict) else []
+                for item in graph_items:
+                    if item.get('@type') in ['Event', 'SaleEvent']:
+                        title = item.get('name', 'No Title')
+                        promo_url = item.get('url', driver.current_url)
+                        details = item.get('description', 'No details.')
+                        start_date = item.get('startDate', '')[:10]
+                        end_date = item.get('endDate', '')[:10]
+                        found_promos.append({"competitor": "Gain City", "title": title, "startDate": start_date, "endDate": end_date, "details": details, "url": promo_url})
+            except (json.JSONDecodeError, AttributeError):
+                continue
+        promotions.extend(found_promos)
+        print(f"    - Found {len(promotions)} promotions from structured data.")
+    except Exception as e:
+        print(f"    - FATAL ERROR for Gain City: {e}")
+    return promotions
+
+# --- Main Execution ---
+def update_jsonbin(data, bin_url, api_key):
+    headers = {'Content-Type': 'application/json', 'X-Master-Key': api_key, 'X-Bin-Versioning': 'false'}
+    print(f"\n--- Updating data to jsonbin.io ---")
+    if not data:
+        print("    - FAILED: Promotion list is empty. Aborting update to prevent data loss.")
+        return False
+    try:
+        payload = {"record": data, "metadata": {"lastUpdate": datetime.utcnow().isoformat()}}
+        response = requests.put(bin_url, headers=headers, data=json.dumps(payload, indent=4))
+        response.raise_for_status()
+        print("    - SUCCESS: Data updated on jsonbin.io.")
+        return True
+    except requests.exceptions.RequestException as e:
+        print(f"    - FAILED: Could not update jsonbin.io. Error: {e}")
+        if e.response is not None:
+            print(f"    - Response Body: {e.response.text}")
+        return False
 
 if __name__ == "__main__":
+    JSONBIN_URL = os.environ.get("JSONBIN_URL")
+    JSONBIN_API_KEY = os.environ.get("JSONBIN_API_KEY")
+
+    if not JSONBIN_URL or not JSONBIN_API_KEY:
+        print("FATAL: Environment variables for jsonbin.io are not set.")
+        exit(1)
+
+    all_promotions = []
     driver = None
     try:
         driver = setup_driver()
-        run_diagnostic(driver)
+        all_promotions.extend(scrape_best_denki(driver))
+        all_promotions.extend(scrape_courts(driver))
+        all_promotions.extend(scrape_harvey_norman(driver))
+        all_promotions.extend(scrape_gain_city(driver))
+    
     except Exception as e:
         print(f"\nAn unexpected error occurred in the main execution block: {e}")
+    
     finally:
         if driver:
-            print("\n--- Shutting down driver ---")
             driver.quit()
-    print("\n--- DIAGNOSTIC SCRIPT FINISHED ---")
+
+    all_promotions = [p for p in all_promotions if p]
+    
+    print(f"\nScraping complete. Total promotions found: {len(all_promotions)}")
+    
+    if all_promotions:
+        update_jsonbin(all_promotions, JSONBIN_URL, JSONBIN_API_KEY)
+    else:
+        print("\nNo promotions found. Skipping JSONbin update.")
