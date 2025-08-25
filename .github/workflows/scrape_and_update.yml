@@ -2,7 +2,7 @@ name: Scrape Competitor Promotions
 
 on:
   schedule:
-    - cron: '0 22 * * *' # Runs daily at 22:00 UTC (5:00 AM JST)
+    - cron: '0 22 * * *' # Runs daily at 22:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -17,8 +17,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      # --- THIS IS THE NEW, MORE RELIABLE METHOD ---
-      # It replaces the entire "Install Chrome Dependencies" block
+      # This is the new, reliable method to install Chrome
       - name: Set up Chrome
         uses: browser-actions/setup-chrome@latest
         with:
