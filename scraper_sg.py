@@ -1,6 +1,6 @@
 import os
 import requests
-# FINAL SOLUTION: Import Firefox-specific components
+# Import Firefox-specific components
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium import webdriver
@@ -38,18 +38,18 @@ def parse_promo_date_sg(date_text, competitor):
 
 def setup_driver():
     """Initializes a robust Selenium WebDriver for GitHub Actions or local use."""
-    # FINAL SOLUTION: Use Firefox options
+    # Use Firefox options
     options = FirefoxOptions()
     options.add_argument("--headless")
     options.add_argument("--window-size=1920,1080")
 
-    # FINAL SOLUTION: Use Firefox service, pointing to the installed geckodriver
-    service = FirefoxService(executable_path="/usr/bin/geckodriver")
+    # Let Selenium find the geckodriver that apt-get installed in the system PATH
+    service = FirefoxService()
         
-    # FINAL SOLUTION: Return a Firefox driver instance
+    # Return a Firefox driver instance
     return webdriver.Firefox(service=service, options=options)
 
-# --- Scraper Functions (No changes needed here, Selenium API is consistent) ---
+# --- Scraper Functions ---
 def scrape_best_denki(driver):
     print("\n--- Scraping Best Denki ---")
     promotions = []
