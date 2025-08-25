@@ -10,10 +10,6 @@ import json
 import time
 from datetime import datetime
 
-# FINAL FIX: Get the explicit paths from environment variables set by the workflow
-CHROME_BINARY_PATH = os.environ.get("CHROME_PATH")
-CHROMEDRIVER_EXECUTABLE_PATH = os.environ.get("CHROMEDRIVER_PATH")
-
 # --- Helper Functions ---
 def parse_promo_date_sg(date_text, competitor):
     """Parses date strings from different Singaporean websites."""
@@ -46,27 +42,15 @@ def setup_driver():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-gpu")
-    options.add_argument("--disable-extensions")
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36")
-    
-    # FINAL FIX: Explicitly tell Selenium where to find the Chrome binary
-    if CHROME_BINARY_PATH:
-        print(f"--- Using Chrome binary from: {CHROME_BINARY_PATH}")
-        options.binary_location = CHROME_BINARY_PATH
-    else:
-        print("--- WARNING: Chrome binary path not found. Using default.")
+    # FINAL FIX: Point options to the Chromium binary
+    options.binary_location = "/usr/bin/chromium-browser"
 
-    # FINAL FIX: Explicitly tell Selenium where to find the chromedriver
-    if CHROMEDRIVER_EXECUTABLE_PATH:
-        print(f"--- Using Chromedriver from: {CHROMEDRIVER_EXECUTABLE_PATH}")
-        service = Service(executable_path=CHROMEDRIVER_EXECUTABLE_PATH)
-    else:
-        print("--- WARNING: Chromedriver path not found. Using default.")
-        service = Service()
+    # FINAL FIX: The service will automatically find the matching chromium-chromedriver
+    service = Service()
         
     return webdriver.Chrome(service=service, options=options)
 
-# --- Scraper Functions (No changes below this line) ---
+# --- Scraper Functions ---
 def scrape_best_denki(driver):
     print("\n--- Scraping Best Denki ---")
     promotions = []
