@@ -37,8 +37,7 @@ def parse_promo_date_sg(date_text, competitor):
 def setup_driver():
     """Initializes a robust Selenium WebDriver for GitHub Actions or local use."""
     options = webdriver.ChromeOptions()
-    # THE FINAL FIX: Switch to the new, more stable headless mode.
-    options.add_argument("--headless=new")
+    options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
