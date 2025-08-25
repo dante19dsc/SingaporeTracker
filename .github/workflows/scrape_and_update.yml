@@ -22,15 +22,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests selenium beautifulsoup4
 
-      # THIS IS THE NEW STEP YOU NEED TO ADD
       - name: Install Chrome Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnss3 libgconf-2-4 libfontconfig1 libxss1
+          sudo apt-get install -y libnss3 libnspr4 libdbus-1-3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libasound2 libatspi2.0-0 libfontconfig1 libxss1
 
       - name: Run Scraper
         env:
           JSONBIN_URL: ${{ secrets.JSONBIN_URL }}
           JSONBIN_API_KEY: ${{ secrets.JSONBIN_API_KEY }}
-          CHROME_BIN: /usr/bin/google-chrome # Make sure Chrome is available
+          CHROME_BIN: /usr/bin/google-chrome
         run: python scraper_sg.py
