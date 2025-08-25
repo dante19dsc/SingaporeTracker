@@ -17,12 +17,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      # FINAL FIX: Give this step an ID to reference its output
-      - name: Set up Chrome
-        id: setup_chrome
-        uses: browser-actions/setup-chrome@latest
-        with:
-          chrome-version: stable
+      # FINAL, STABLE METHOD: Install Ubuntu's official Chromium package
+      - name: Install Chromium Browser and Driver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
 
       - name: Install Python dependencies
         run: |
@@ -31,9 +30,6 @@ jobs:
 
       - name: Run Scraper
         env:
-          # FINAL FIX: Pass the exact paths from the setup step to the Python script
-          CHROME_PATH: ${{ steps.setup_chrome.outputs.chrome-path }}
-          CHROMEDRIVER_PATH: ${{ steps.setup_chrome.outputs.chromedriver-path }}
           JSONBIN_URL: ${{ secrets.JSONBIN_URL }}
           JSONBIN_API_KEY: ${{ secrets.JSONBIN_API_KEY }}
         run: python scraper_sg.py
