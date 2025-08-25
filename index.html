@@ -1,26 +1,32 @@
+    
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
     <title>Company Portal - Competitor Promotion Tracker</title>
+    
+    <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- External CSS -->
+    
+    <!-- Custom Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="notification" class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg notification">
+    <!-- Notification -->
+    <div id="notification" class="notification">
         <span id="notification-text"></span>
     </div>
-    
-    <!-- Entire page content (unchanged from your delta.html) -->
+
     <div class="flex flex-col min-h-screen p-4 md:p-8">
+        <!-- Header -->
         <header class="paper-card flex flex-col md:flex-row items-center justify-between p-4 w-full mb-6">
             <div class="flex items-center mb-4 md:mb-0">
                 <svg class="h-8 w-8 mr-2" viewBox="0 0 240 208" xmlns="http://www.w3.org/2000/svg"><path fill="#A1112C" d="M148.2,148.1c-9.3,12.4-26.2,18.6-43.1,18.6c-12.4,0-24.8-4.1-34.2-12.4c-13.4-11.4-20.7-28.8-18.6-46.3c-14.5-7.2-22.8-22.8-20.7-39.4c2.1-16.6,15.5-29.8,32.1-32.9c5.2-20.7,23.8-35.2,45.5-35.2c24.8,0,45.5,18.6,48.6,43.1c16.6,3.1,28.8,16.5,29.8,33.1c1,16.6-7.2,32.1-21.7,40.4C167.8,124.5,160.5,138.8,148.2,148.1z"/><path fill="#D61A3B" d="M211.2,124.5c-9.3,12.4-26.2,18.6-43.1,18.6c-12.4,0-24.8-4.1-34.2-12.4c-13.4-11.4-20.7-28.8-18.6-46.3c-14.5-7.2-22.8-22.8-20.7-39.4c2.1-16.6,15.5-29.8,32.1-32.9c5.2-20.7,23.8-35.2,45.5-35.2c24.8,0,45.5,18.6,48.6,43.1c16.6,3.1,28.8,16.5,29.8,33.1C251.2,125.4,225.7,117.2,211.2,124.5z"/></svg>
@@ -33,20 +39,93 @@
             </nav>
         </header>
 
-        <!-- Main content -->
+        <!-- Main Content -->
         <main class="flex-1 min-w-0">
-            <!-- (all your content remains exactly as in original file) -->
-            <!-- ... -->
+            <!-- Page Title & Actions -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold" style="color: var(--color-header);">Competitor Promotion Tracker</h1>
+                    <p style="color: var(--text-secondary);" class="mt-2">Monitor and analyze competitor promotional activities in real-time</p> 
+                    <p id="last-updated-text" class="text-xs text-gray-500 mt-1"></p>
+                    <div class="flex gap-2 mt-4">
+                        <a href="#" class="active-country-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white" style="background-color: var(--color-accent);">
+                            <i class="fa-solid fa-location-dot mr-2"></i>Singapore
+                        </a>
+                        <a href="https://dante19dsc.github.io/analystdante/echo.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm hover:bg-gray-50" style="color: var(--color-text-secondary);">Malaysia</a>
+                        <a href="https://dante19dsc.github.io/analystdante/charlier.html#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm hover:bg-gray-50" style="color: var(--color-text-secondary);">Indonesia</a>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button id="openAddPromoModalBtn" class="inline-flex items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white" style="background-color: var(--color-accent);">
+                        <i class="fa-solid fa-plus mr-2"></i> Add Promotion
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timeline View (Desktop) -->
+            <div class="paper-card p-6 mb-8 hidden lg:block">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="timeline-title" class="text-lg font-semibold" style="color: var(--color-header);"></h3>
+                    <div class="flex items-center gap-2">
+                        <button id="prev-month-btn" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">&lt; Prev</button>
+                        <button id="next-month-btn" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Next &gt;</button>
+                    </div>
+                </div>
+                <div id="timeline-wrapper" class="border border-gray-200 rounded-lg overflow-x-auto">
+                    <!-- JS populates this -->
+                </div>
+            </div>
+            
+            <!-- Timeline View (Mobile Fallback) -->
+            <div class="paper-card p-4 mb-8 lg:hidden">
+                <p class="text-center text-gray-600">The detailed timeline view is available on larger screens.</p>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-6" style="color: var(--color-header);">Dashboard & Reporting</h2>
+                <div class="grid grid-cols-1 gap-8">
+                    <div class="paper-card p-6 flex flex-col">
+                        <h3 class="text-lg font-semibold mb-4" style="color: var(--color-header);">Active Promotions per Competitor (Current Month)</h3>
+                        <div class="relative flex-1" style="min-height: 250px;"><canvas id="bar-chart"></canvas></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="paper-card p-6 flex flex-col">
+                            <h3 class="text-lg font-semibold mb-4 text-center" style="color: var(--color-header);">Promotion Types: Courts</h3>
+                            <div class="relative w-40 h-40 md:w-48 md:h-48 mx-auto flex-shrink-0"><canvas id="pie-chart-courts"></canvas></div>
+                            <div id="legend-courts" class="mt-4"></div>
+                        </div>
+                        <div class="paper-card p-6 flex flex-col">
+                            <h3 class="text-lg font-semibold mb-4 text-center" style="color: var(--color-header);">Promotion Types: Harvey Norman</h3>
+                            <div class="relative w-40 h-40 md:w-48 md:h-48 mx-auto flex-shrink-0"><canvas id="pie-chart-harvey-norman"></canvas></div>
+                            <div id="legend-harvey-norman" class="mt-4"></div>
+                        </div>
+                        <div class="paper-card p-6 flex flex-col">
+                            <h3 class="text-lg font-semibold mb-4 text-center" style="color: var(--color-header);">Promotion Types: Gain City</h3>
+                            <div class="relative w-40 h-40 md:w-48 md:h-48 mx-auto flex-shrink-0"><canvas id="pie-chart-gain-city"></canvas></div>
+                            <div id="legend-gain-city" class="mt-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promotion Cards Section -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-6" style="color: var(--color-header);">Current Promotions Overview</h2>
+                <div id="promo-cards-container" class="promo-card-grid"></div>
+            </div>
         </main>
     </div>
 
-    <!-- Modals & forms remain as-is -->
-    <div id="promoModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">...</div>
-    <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">...</div>
-    <div id="addPromoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">...</div>
-    <div id="editPromoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">...</div>
+    <!-- Modals -->
+    <div id="promoModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"><div class="paper-card max-w-sm w-full mx-4"><h4 class="text-lg font-bold mb-4" style="color: var(--color-header);">Promotion Details</h4><p id="modal-content" style="color: var(--text-secondary);" class="whitespace-pre-wrap"></p><div id="modal-actions" class="mt-6 flex justify-end gap-2"></div></div></div>
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"><div class="paper-card max-w-sm w-full mx-4"><h4 class="text-lg font-bold mb-2" style="color: var(--color-header);">Confirm Deletion</h4><p class="mb-6" style="color: var(--text-secondary);">Are you sure you want to delete this promotion?</p><div class="flex justify-end gap-2"><button id="cancelDeleteBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button><button id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Yes, Delete</button></div></div></div>
+    <div id="addPromoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"><div class="paper-card max-w-lg w-full mx-4"><div class="flex justify-between items-center mb-4"><h4 class="text-lg font-bold" style="color: var(--color-header);">Add New Promotion</h4><button onclick="document.getElementById('addPromoModal').classList.add('hidden')" style="color: var(--text-secondary);"><i class="fa-solid fa-xmark"></i></button></div><form id="addPromoForm" class="space-y-4 mb-4"><div><label for="competitor" class="block text-sm font-medium" style="color: var(--text-secondary);">Competitor</label><select id="competitor" name="competitor" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></select></div><div><label for="promoType" class="block text-sm font-medium" style="color: var(--text-secondary);">Promotion Type</label><select id="promoType" name="promoType" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></select></div><div><label for="title" class="block text-sm font-medium" style="color: var(--text-secondary);">Promotion Title</label><input type="text" id="title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div><div><label for="promoUrl" class="block text-sm font-medium" style="color: var(--text-secondary);">Promotion URL</label><input type="url" id="promoUrl" name="promoUrl" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="https://example.com/promo"></div><div class="flex gap-4"><div class="flex-1"><label for="startDate" class="block text-sm font-medium" style="color: var(--text-secondary);">Start Date</label><input type="date" id="startDate" name="startDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div><div class="flex-1"><label for="endDate" class="block text-sm font-medium" style="color: var(--text-secondary);">End Date</label><input type="date" id="endDate" name="endDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div></div><div><label for="details" class="block text-sm font-medium" style="color: var(--text-secondary);">Details</label><textarea id="details" name="details" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea></div><button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white" style="background-color: var(--color-accent);">Add Promotion</button></form></div></div>
+    <div id="editPromoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"><div class="paper-card max-w-lg w-full mx-4"><div class="flex justify-between items-center mb-4"><h4 class="text-lg font-bold" style="color: var(--color-header);">Edit Promotion</h4><button onclick="document.getElementById('editPromoModal').classList.add('hidden')" style="color: var(--text-secondary);"><i class="fa-solid fa-xmark"></i></button></div><form id="editPromoForm" class="space-y-4"><input type="hidden" id="editPromoId"><div><label for="editCompetitor" class="block text-sm font-medium" style="color: var(--text-secondary);">Competitor</label><select id="editCompetitor" name="competitor" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></select></div><div><label for="editPromoType" class="block text-sm font-medium" style="color: var(--text-secondary);">Promotion Type</label><select id="editPromoType" name="promoType" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></select></div><div><label for="editTitle" class="block text-sm font-medium" style="color: var(--text-secondary);">Promotion Title</label><input type="text" id="editTitle" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div><div><label for="editPromoUrl" class="block text-sm font-medium" style="color: var(--text-secondary);">Promotion URL</label><input type="url" id="editPromoUrl" name="promoUrl" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="https://example.com/promo"></div><div class="flex gap-4"><div class="flex-1"><label for="editStartDate" class="block text-sm font-medium" style="color: var(--text-secondary);">Start Date</label><input type="date" id="editStartDate" name="startDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div><div class="flex-1"><label for="editEndDate" class="block text-sm font-medium" style="color: var(--text-secondary);">End Date</label><input type="date" id="editEndDate" name="endDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></div></div><div><label for="editDetails" class="block text-sm font-medium" style="color: var(--text-secondary);">Details</label><textarea id="editDetails" name="details" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea></div><button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white" style="background-color: var(--color-accent);">Save Changes</button></form></div></div>
 
-    <!-- External JS -->
+    <!-- Custom Script -->
     <script src="script.js"></script>
 </body>
 </html>
+
+  
