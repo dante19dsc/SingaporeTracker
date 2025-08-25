@@ -25,7 +25,7 @@ jobs:
       - name: Install Chrome Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnss3 libnspr4 libdbus-1-3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libasound2 libatspi2.0-0 libfontconfig1 libxss1
+          sudo apt-get install -y libnss3 libnspr4 libdbus-1-3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libasound2t64 libatspi2.0-0 libfontconfig1 libxss1
 
       - name: Run Scraper
         env:
