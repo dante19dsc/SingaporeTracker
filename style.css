@@ -1,48 +1,294 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/6891a251f7e7a370d1f41a77';
-    const JSONBIN_API_KEY = '$2a$10$sOSZ5D6cVDPPwJUTty/w0uvrbNINyCukvfWIeW2bv4BhXiQe8jwym';
+:root {
+    /* Mocha Mousse & Sunrise Palette */
+    --color-bg: #FDF8F3;
+    --color-surface: #FFFBF7;
+    --color-header: #6B4E3D; /* Rich Mocha */
+    --color-text-primary: #6B4E3D;
+    --color-text-secondary: #A67C5A;
+    --color-border: #E8D5C4;
+    --color-accent: #E67E22; /* Sunset Orange */
+    --color-accent-secondary: #F39C12; /* Golden Honey */
 
-    let promotions = [];
-    let currentDate = new Date('2025-08-01T00:00:00Z');
-    let charts = {};
+    /* Data Palette */
+    --color-comp-1: #D2691E; /* Courts - Warm Chocolate */
+    --color-comp-2: #CD853F; /* Harvey Norman - Sandy Brown */
+    --color-comp-3: #8B4513; /* Gain City - Saddle Brown */
+}
+body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: var(--color-bg); 
+    color: var(--color-text-primary); 
+}
+.paper-card { 
+    background-color: var(--color-surface);
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    padding: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 8px 32px rgba(107, 78, 61, 0.1);
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+.paper-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(107, 78, 61, 0.15);
+}
+.notification { 
+    transform: translateX(100%); 
+    transition: transform 0.3s ease-in-out; 
+    position: fixed; 
+    top: 1rem; 
+    right: 1rem; 
+    z-index: 50; 
+}
+.notification.show { 
+    transform: translateX(0); 
+}
 
-    // config, categories, icons...
-    const competitors = ['Courts','Harvey Norman','Gain City'];
-    const competitorConfig = { /*...*/ };
-    const promoCategories = [ /*...*/ ];
-    const categoryColors = { /*...*/ };
-    const categoryIcons = { /*... SVG strings ...*/ };
+/* --- Timeline Styles --- */
+.timeline-full-row { 
+    display: flex; 
+    align-items: stretch; 
+    border-bottom: 1px solid var(--color-border); 
+    min-height: 44px; 
+}
+.timeline-full-row:last-child { 
+    border-bottom: none; 
+}
+.timeline-sticky-label { 
+    flex: 0 0 200px; 
+    padding: 8px 12px; 
+    font-size: 13px; 
+    font-weight: 500; 
+    color: var(--text-primary); 
+    background-color: #fcfaf8; 
+    border-right: 1px solid var(--color-border); 
+    position: sticky; 
+    left: 0; 
+    z-index: 10; 
+    display: flex; 
+    align-items: center; 
+}
+.timeline-cells-container { 
+    flex-grow: 1; 
+    position: relative; 
+    display: flex; 
+}
+.timeline-header-row { 
+    position: sticky; 
+    top: 0; 
+    z-index: 20; 
+    background-color: var(--color-header); 
+    color: white; 
+}
+.timeline-header-row .timeline-sticky-label { 
+    font-weight: 700; 
+    background-color: var(--color-header); 
+    color: white; 
+}
+.timeline-header-day { 
+    flex: 1 1 0%; 
+    padding: 8px 4px; 
+    text-align: center; 
+    font-size: 11px; 
+    font-weight: 600; 
+    border-right: 1px solid #8a6f5e; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    min-width: 30px; 
+}
+.timeline-header-day.today { 
+    background-color: var(--color-accent); 
+    animation: pulse 2s infinite; 
+}
+.timeline-header-day.weekend { 
+    background-color: #806251; 
+}
+.timeline-competitor-header .timeline-sticky-label { 
+    font-weight: 700; 
+    font-size: 14px; 
+    background-color: #fdf8f3; 
+}
+.timeline-bar { 
+    position: absolute; 
+    height: 28px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    border-radius: 4px; 
+    display: flex; 
+    align-items: center; 
+    font-size: 11px; 
+    font-weight: 600; 
+    color: white; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    padding: 0 8px; 
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow: ellipsis; 
+    box-sizing: border-box; 
+}
+.timeline-bar:hover { 
+    transform: translateY(-50%) scaleY(1.1); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+    z-index: 5; 
+}
+.timeline-bar.courts { 
+    background-color: var(--color-comp-1); 
+}
+.timeline-bar.harvey-norman { 
+    background-color: var(--color-comp-2); 
+}
+.timeline-bar.gain-city { 
+    background-color: var(--color-comp-3); 
+}
 
-    // utility, API, render, event handlers, notifications
-    async function loadPromotions() { /* ... full code copied ... */ }
-    async function saveData(updatedPromotions){ /* ... */ }
+/* --- Custom Scrollbar Styles --- */
+#timeline-wrapper::-webkit-scrollbar { 
+    width: 8px; 
+    height: 8px; 
+}
+#timeline-wrapper::-webkit-scrollbar-track { 
+    background: #f1f1f1; 
+    border-radius: 10px; 
+}
+#timeline-wrapper::-webkit-scrollbar-thumb { 
+    background: #ccc; 
+    border-radius: 10px; 
+}
+#timeline-wrapper::-webkit-scrollbar-thumb:hover { 
+    background: #aaa; 
+}
+#timeline-wrapper { 
+    scrollbar-width: thin; 
+    scrollbar-color: #ccc #f1f1f1; 
+}
 
-    const handleAddPromoForm = async (event) => { /* ... */ };
-    const handleEditPromoForm = async (event) => { /* ... */ };
-    const deletePromotion = async (promoId) => { /* ... */ };
+/* --- Promo Card Section --- */
+.promo-card-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 1.5rem; 
+}
+.promo-card-header { 
+    padding: 1rem; 
+    font-size: 1.25rem; 
+    font-weight: 700; 
+    color: white; 
+    border-bottom: 1px solid var(--border-color); 
+}
+.promo-card-header.courts { 
+    background-color: var(--color-comp-1); 
+}
+.promo-card-header.harvey-norman { 
+    background-color: var(--color-comp-2); 
+}
+.promo-card-header.gain-city { 
+    background-color: var(--color-comp-3); 
+}
+.promo-card-content { 
+    padding: 1rem; 
+    flex-grow: 1; 
+}
+.promo-item { 
+    display: flex; 
+    align-items: flex-start; 
+    margin-bottom: 1rem; 
+    padding-bottom: 1rem; 
+    border-bottom: 1px dashed var(--border-color); 
+    position: relative; 
+}
+.promo-item:last-child { 
+    margin-bottom: 0; 
+    padding-bottom: 0; 
+    border-bottom: none; 
+}
+.promo-item-icon-container { 
+    width: 80px; 
+    height: 80px; 
+    border-radius: 0.5rem; 
+    margin-right: 1rem; 
+    flex-shrink: 0; 
+    padding: 12px; 
+    border: 1px solid var(--border-color); 
+    background-color: #f9fafb; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: transform 0.2s ease-in-out; 
+}
+.promo-item-icon-container:hover { 
+    transform: scale(1.1); 
+}
+.promo-item-icon-container svg { 
+    width: 100%; 
+    height: 100%; 
+}
+.promo-item-details { 
+    flex-grow: 1; 
+}
+.promo-item-title { 
+    font-weight: 600; 
+    color: var(--text-primary); 
+    margin-bottom: 0.25rem; 
+}
+.promo-item-category { 
+    font-size: 0.75rem; 
+    color: var(--text-secondary); 
+    margin-bottom: 0.5rem; 
+    padding: 0.25rem 0.5rem; 
+    background-color: #f7f7f9; 
+    border-radius: 0.25rem; 
+    display: inline-block; 
+}
+.promo-item-description { 
+    font-size: 0.875rem; 
+    color: var(--text-secondary); 
+}
+.promo-item-actions { 
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    display: flex; 
+    gap: 0.25rem; 
+}
+.promo-item-actions button { 
+    background: none; 
+    border: none; 
+    color: #9ca3af; 
+    cursor: pointer; 
+    padding: 0.25rem; 
+}
+.promo-item-actions button:hover { 
+    color: var(--color-accent); 
+}
+.promo-item-actions .delete-promo-btn:hover { 
+    color: #ef4444; 
+}
 
-    const createTimeline = () => { /* ... */ };
-    const generateCustomLegend = (chart, containerId) => { /* ... */ };
-    const renderDashboard = (activePromos) => { /* ... */ };
-    const renderPromotionCards = (activePromos) => { /* ... */ };
-    const rerenderAll = () => { /* ... */ };
+.active-country-btn {
+    animation: pulse-light 2.5s infinite;
+}
 
-    const showPromoDetailsModal = (promoId) => { /* ... */ };
-    const showDeleteConfirmModal = (promoId) => { /* ... */ };
-    const showEditPromoModal = (promoId) => { /* ... */ };
-    const populateDropdowns = () => { /* ... */ };
-    const showNotification = (message, colorClass='bg-green-500') => { /* ... */ };
-    const updateLastUpdatedText = () => { /* ... */ };
-
-    // init
-    populateDropdowns();
-    document.getElementById('openAddPromoModalBtn').addEventListener('click', () => { document.getElementById('addPromoModal').classList.remove('hidden'); });
-    document.getElementById('addPromoForm').addEventListener('submit', handleAddPromoForm);
-    document.getElementById('editPromoForm').addEventListener('submit', handleEditPromoForm);
-    document.getElementById('cancelDeleteBtn').addEventListener('click', ()=>{ document.getElementById('deleteConfirmModal').classList.add('hidden'); });
-    document.getElementById('confirmDeleteBtn').addEventListener('click', (e)=>{ const promoId=parseInt(e.currentTarget.dataset.promoId); deletePromotion(promoId); });
-    document.getElementById('prev-month-btn').addEventListener('click', ()=>{ currentDate.setUTCMonth(currentDate.getUTCMonth()-1,1); rerenderAll(); });
-    document.getElementById('next-month-btn').addEventListener('click', ()=>{ currentDate.setUTCMonth(currentDate.getUTCMonth()+1,1); rerenderAll(); });
-
-    loadPromotions();
-});
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+@keyframes pulse { 
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7); } 
+    50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(230, 126, 34, 0); } 
+}
+@keyframes pulse-light { 
+    0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.4); 
+    } 
+    70% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(230, 126, 34, 0); 
+    }
+    85% {
+        transform: scale(1.02);
+    }
+}
