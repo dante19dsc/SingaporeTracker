@@ -1,3 +1,4 @@
+    
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,7 +51,6 @@
                         <a href="#" class="active-country-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white" style="background-color: var(--color-accent);">
                             <i class="fa-solid fa-location-dot mr-2"></i>Singapore
                         </a>
-                        <!-- FIX: Removed target="_blank" from the links below -->
                         <a href="https://dante19dsc.github.io/analystdante/echo.html" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm hover:bg-gray-50" style="color: var(--color-text-secondary);">
                             Malaysia
                         </a>
@@ -93,7 +93,12 @@
                         <h3 class="text-lg font-semibold mb-4" style="color: var(--color-header);">Active Promotions per Competitor (Current Month)</h3>
                         <div class="relative flex-1" style="min-height: 250px;"><canvas id="bar-chart"></canvas></div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div class="paper-card p-6 flex flex-col">
+                            <h3 class="text-lg font-semibold mb-4 text-center" style="color: var(--color-header);">Promotion Types: Best Denki</h3>
+                            <div class="relative w-40 h-40 md:w-48 md:h-48 mx-auto flex-shrink-0"><canvas id="pie-chart-best-denki"></canvas></div>
+                            <div id="legend-best-denki" class="mt-4"></div>
+                        </div>
                         <div class="paper-card p-6 flex flex-col">
                             <h3 class="text-lg font-semibold mb-4 text-center" style="color: var(--color-header);">Promotion Types: Courts</h3>
                             <div class="relative w-40 h-40 md:w-48 md:h-48 mx-auto flex-shrink-0"><canvas id="pie-chart-courts"></canvas></div>
@@ -131,3 +136,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
+  
